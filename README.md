@@ -23,3 +23,10 @@
 Run convert.py
 Run main.py train 
 ```
+
+## Requirement
+
+```
+pytorch (cuda supported)
+
+```
