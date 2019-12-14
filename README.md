@@ -5,7 +5,14 @@
 2.Unzip zip file
 
 3.Rename the data folder
+```
+--data_road\ 
+  --training\
+    --image
+    --label
+    --label_grayscale
+  --testing\
+    --image
+    --label
 
---data_road --training --testing
-
-
+```
