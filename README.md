@@ -37,6 +37,7 @@ Run main.py train
 ## Requirement
 
 ```
+python 3.6 up
 pytorch (cuda supported)
 
 ```
