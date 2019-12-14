@@ -6,9 +6,6 @@
 
 3.Rename the data folder
 
---data_road
-          
-  --traing
-  
-  --testing
+--data_road --training --testing
+
 
