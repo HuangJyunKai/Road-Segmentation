@@ -1,11 +1,11 @@
 # Road-Segmentation
 
-## Download 
-1.Download dataset from http://www.cvlibs.net/datasets/kitti/eval_road.php
+## Download and Data format
+1. Download dataset from http://www.cvlibs.net/datasets/kitti/eval_road.php
 
-2.Unzip zip file
+2. Unzip zip file
 
-3.Rename the data folder 
+3. Rename the data folder 
 ```
 -- data_road\ 
     -- training\
