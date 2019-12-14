@@ -1,5 +1,6 @@
 # Road-Segmentation
 
+## Download 
 1.Download dataset from http://www.cvlibs.net/datasets/kitti/eval_road.php
 
 2.Unzip zip file
@@ -16,7 +17,8 @@
        -- label
 
 ```
-4.
+## Run script
+
 ```
 Run convert.py
 Run main.py train 
