@@ -9,13 +9,23 @@
 ```
 -- data_road\ 
     -- training\
-       -- image
-       -- label
-       -- label_grayscale
+       -- image\
+          -- um_000000.png
+          -- um_000001.png
+          ...
+       -- label\
+          -- um_lane_000000.png
+          -- um_lane_000001.png
+          ...
+       -- label_grayscale\
+          ...
+       -- calib\
+          ...
     -- testing\
-       -- image
-       -- label
-
+       -- image\
+          -- um_000000.png
+       -- calib\
+          ...
 ```
 ## Run script
 
