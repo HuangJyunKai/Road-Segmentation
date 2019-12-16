@@ -1,7 +1,7 @@
 # Road-Segmentation
 
 ## Download and Data format
-1. Download dataset from http://www.cvlibs.net/datasets/kitti/eval_road.php
+1. Download dataset from http://www.cvlibs.net/datasets/kitti/eval_road.php or https://drive.google.com/file/d/1gakXvNJmnf9YPBt_taE_rlXduWtvMEqk/view?usp=sharing
 
 2. Unzip zip file
 
