@@ -38,9 +38,12 @@ def make_dataset(root):
                 img_path=os.path.join(root+'label/'+filename2)
                 img=Image.open(img_path)
                 img=convert_grayscale(img)
+
                 img.save(root+'label_grayscale/'+filename2)
                 print(count)
                 count+=1
 if __name__ == '__main__':
     root='./data_road/training/'
+    if not os.path.isdir(root+'label_grayscale/'):
+        os.mkdir(root+'label_grayscale/')
     make_dataset(root)

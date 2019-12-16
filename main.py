@@ -9,7 +9,6 @@ from torch import nn, optim
 from torchvision.transforms import transforms
 from torch.optim import lr_scheduler
 from unet_model import Unet
-from network import R2U_Net,AttU_Net,R2AttU_Net,U_Net
 from unet_resnet18 import ResNetUNet
 from fcn import VGGNet, FCN32s, FCN16s, FCN8s, FCNs
 from dataset import RoadDataset
@@ -20,7 +19,8 @@ import numpy as np
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 x_transforms = transforms.Compose([
-	transforms.Resize((375,1242)),
+	#transforms.Resize((375,1242)),
+    transforms.Resize((352,1216)), #for fcn
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225])
     #transforms.Normalize(mean=[0.5],std=[0.5])
@@ -30,32 +30,14 @@ x_transforms = transforms.Compose([
 
 #y_transforms = transforms.ToTensor()
 y_transforms = transforms.Compose([
-	transforms.Resize((375,1242)),
+	#transforms.Resize((375,1242)),
+    transforms.Resize((352,1216)),
     #transforms.ToTensor()
 ])
 
-# mask只需要转换为tensor
-def val(epoch,model, criterion, optimizer, dataload):
-    model.eval()
-    road_dataset = RoadDataset("/home/cvlab04/Desktop/Code/Medical/u_net_liver/data/val/", transform=x_transforms,target_transform=y_transforms)
-    dataloaders = DataLoader(road_dataset, batch_size=6)
-    step=0
-    epoch_loss = 0
-    print("Validation...")
-    with torch.no_grad():
-        for x, y in dataloaders:
-            step += 1
-            inputs = x.to(device)
-            labels = y.to(device)
-            # zero the parameter gradients
-            # forward
-            outputs = model(inputs)
-            loss = criterion(outputs, labels)
-            epoch_loss += loss.item()
-        print("epoch %d Val_loss:%0.5f " % (epoch, epoch_loss/step))
-    return epoch_loss/step
 
-def train_model(model, criterion, optimizer, dataload, scheduler,num_epochs=50):
+
+def train_model(model, criterion, optimizer, dataload, scheduler,num_epochs=200):
     for epoch in range(num_epochs):
         #scheduler.step()
         print('Epoch {}/{}'.format(epoch, num_epochs - 1))
@@ -86,24 +68,21 @@ def train_model(model, criterion, optimizer, dataload, scheduler,num_epochs=50):
         
         print("epoch %d loss:%0.5f " % (epoch, epoch_loss/step))
         #val_loss = val(epoch,model, criterion, optimizer, dataload)
-        fp = open("Road_%d_unet.txt" % num_epochs, "a")
-        fp.write("epoch %d loss:%0.5f " % (epoch, epoch_loss/step))
+        fp = open("Road_%d_fcns_class2.txt" % num_epochs, "a")
+        fp.write("epoch %d loss:%0.5f \n" % (epoch, epoch_loss/step))
         fp.close()
         
-    torch.save(model.state_dict(), 'weights_%d_unet_road.pth' % num_epochs)
+    torch.save(model.state_dict(), 'weights_%d_fcns_road_class2.pth' % num_epochs)
     return model
 
 #训练模型
 def train(args):
     step_size  = 50
     gamma      = 0.5
-    #vgg_model = VGGNet(requires_grad=True, remove_fc=True)
-    #model = FCNs(pretrained_net=vgg_model, n_class=3).to(device)
+    vgg_model = VGGNet(requires_grad=True, remove_fc=True)
+    model = FCNs(pretrained_net=vgg_model, n_class=3).to(device)
     #model=torchvision.models.segmentation.fcn_resnet101(pretrained=False, progress=True, num_classes=3).to(device)
-    model = Unet(3, 3).to(device)
-    #pretrained_net = FeatureResNet()
-    #pretrained_net.load_state_dict(torchvision.models.resnet34(pretrained=True).state_dict())
-    #model = SegResNet(3, pretrained_net).to(device)
+    #model = Unet(3, 3).to(device)
     batch_size = args.batch_size
     #criterion = nn.BCEWithLogitsLoss()
     optimizer = optim.Adam(model.parameters(), weight_decay=1e-5)
@@ -151,20 +130,19 @@ def test(args):
             
             count_sum += (dice_loss)
         print("Final_Dice_Loss:",count_sum/count)
-train_to_full = {0:0,1:1,2:2}
-full_to_colour = {0: (255, 0, 0), 1: (255, 255, 255),2: (0,0, 255)}
 
 def check(args):
-    model = Unet(3, 3)
-    #vgg_model = VGGNet(requires_grad=True, remove_fc=True)
-    #model = FCN8s(pretrained_net=vgg_model, n_class=1)
+    #model = Unet(3, 3)
+    vgg_model = VGGNet(requires_grad=True, remove_fc=True)
+    model = FCN8s(pretrained_net=vgg_model, n_class=3)
     model.load_state_dict(torch.load(args.ckpt,map_location='cpu'))
     model.eval()
     import PIL.Image as Image
     img = Image.open('./data_road/training/image/um_000004.png')
     #img = Image.open('/home/cvlab04/Desktop/Code/Medical/u_net_liver/A001-23230277-27.jpeg').convert('RGB')
     img = x_transforms(img)
-    img = img.view(1,3,375,1242)
+    #img = img.view(1,3,375,1242)
+    img = img.view(1,3,352,1216)
     import matplotlib.pyplot as plt
     plt.ion()
     with torch.no_grad():
@@ -173,7 +151,7 @@ def check(args):
         output = torch.softmax(output,dim=1)
         N, _, h, w = output.shape
         #print(output)
-        pred = output.transpose(0, 2).transpose(3, 1).reshape(-1, 3).argmax(axis=1).reshape(N, h, w)
+        pred = output.transpose(0, 2).transpose(3, 1).reshape(-1, 3).argmax(axis=1).reshape(N, h, w) #class 2
         pred = pred.squeeze(0)
         print(pred)
         Decode_image(pred)
@@ -181,15 +159,15 @@ def check(args):
 
 def Model_visualization(args):
     from torchsummary import summary
-    model = Unet(1, 1).to(device)
+    model = Unet(3, 3).to(device)
     summary(model, input_size=(1,512,512)) 
 def Decode_image(img_n):
     import PIL.Image as Image
-    img_ans=np.zeros((img_n.shape[0],img_n.shape[1],3), dtype=np.int)
+    img_ans=np.zeros((img_n.shape[0],img_n.shape[1],3), dtype=np.int) #class 2
     for i in range(img_n.shape[0]):
         for j in range(img_n.shape[1]):
-            if img_n[i][j] == 0: #black
-                img_ans[i][j][0] = 0
+            if img_n[i][j] == 0: #black to red background
+                img_ans[i][j][0] = 255
                 img_ans[i][j][1] = 0
                 img_ans[i][j][2] = 0
             elif img_n[i][j] == 1: #purple
@@ -201,7 +179,7 @@ def Decode_image(img_n):
                 img_ans[i][j][1] = 0
                 img_ans[i][j][2] = 0
     im_ans = Image.fromarray(np.uint8(img_ans)).convert('RGB')           
-    im_ans.save("./Result/um_000004_pred.png")
+    im_ans.save("./Result/um_000004_fcn_pred200_class2.png")
 
 if __name__ == '__main__':
     #参数解析

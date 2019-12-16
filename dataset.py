@@ -35,6 +35,8 @@ def make_dataset(root):
     masks=[]
     for filename in os.listdir(root):
         for filename2 in os.listdir(root+filename):
+            if filename2 == '.ipynb_checkpoints':
+                break
             if filename == 'label':
                 mask=os.path.join(root+'label_grayscale/'+filename2)
                 masks.append(mask)
@@ -67,7 +69,7 @@ class RoadDataset(Dataset):
         if self.target_transform is not None:
             img_y = self.target_transform(img_y)
         img_n = np.array(img_y)
-        target = torch.zeros(3, 375, 1242)
+        target = torch.zeros(3, img_n.shape[0], img_n.shape[1]) #3 class
         for c in range(3):
             target[c][img_n == c] = 1
         #print(img_x.shape,target.shape)
