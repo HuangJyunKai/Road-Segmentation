@@ -15,7 +15,6 @@ from dataset import RoadDataset
 from model import FeatureResNet, SegResNet
 import numpy as np
 
-# 是否使用cuda
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 x_transforms = transforms.Compose([
@@ -26,9 +25,7 @@ x_transforms = transforms.Compose([
     #transforms.Normalize(mean=[0.5],std=[0.5])
 ])
 
-# mask只需要转换为tensor
 
-#y_transforms = transforms.ToTensor()
 y_transforms = transforms.Compose([
 	#transforms.Resize((375,1242)),
     transforms.Resize((352,1216)),
@@ -75,7 +72,7 @@ def train_model(model, criterion, optimizer, dataload, scheduler,num_epochs=200)
     torch.save(model.state_dict(), 'weights_%d_fcns_road_class2.pth' % num_epochs)
     return model
 
-#训练模型
+
 def train(args):
     step_size  = 50
     gamma      = 0.5
@@ -94,42 +91,6 @@ def train(args):
     road_dataset = RoadDataset("./data_road/training/",transform=x_transforms,target_transform=y_transforms)
     dataloaders = DataLoader(road_dataset, batch_size=batch_size, shuffle=True)
     train_model(model, criterion, optimizer, dataloaders,scheduler)
-
-#显示模型的输出结果
-def test(args):
-    model = Unet(1, 1)
-    #model = R2Att_Net()
-    #model = U_Net()
-    model.load_state_dict(torch.load(args.ckpt,map_location='cpu'))
-    road_dataset = RoadDataset("./data_road/testing/", transform=x_transforms,target_transform=y_transforms)
-    dataloaders = DataLoader(road_dataset, batch_size=6)
-    model.eval()
-    import matplotlib.pyplot as plt
-    #plt.ion()
-    count=0
-    count_sum=0.
-    dice_loss=0.
-    with torch.no_grad():
-        for x, labels in dataloaders:
-            count+=1
-            print("batch:",count)
-            y=model(x)
-            img_y=torch.squeeze(y).numpy()
-            img_y = (img_y> 0.3).astype(np.uint8)
-            img_y = img_y.flatten()
-            count_predict=np.count_nonzero(img_y > 0)
-            #print("predict pixel:   ",count_predict)
-            true =torch.squeeze(labels).numpy()
-            true  = true .flatten()
-            count_true=np.count_nonzero(true > 0)
-            #print("true pixel:   ",count_true)
-            ans=0
-            ans = np.count_nonzero(img_y*true>0)
-            dice_loss = (2*ans+0.0001)/(count_predict+count_true + 0.0001)
-            print("dice_loss:",dice_loss)
-            
-            count_sum += (dice_loss)
-        print("Final_Dice_Loss:",count_sum/count)
 
 def check(args):
     #model = Unet(3, 3)
