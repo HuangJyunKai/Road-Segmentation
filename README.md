@@ -27,11 +27,13 @@
        -- calib\
           ...
 ```
+4. Download weights file from https://drive.google.com/file/d/14bQbLzEjSucD7otv69iC5wCx36mVjDaF/view?usp=sharing
 ## Run script
 
 ```
 Run convert.py
 Run main.py train 
+Run main.py check --ckpt=weights.pth  #predict image
 ```
 
 ## Requirement
