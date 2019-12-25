@@ -128,8 +128,9 @@ def Generate(args):
     import PIL.Image as Image
     import matplotlib.pyplot as plt
     #model = Unet(3, 3)
-    vgg_model = VGGNet(requires_grad=True, remove_fc=True)
-    model = FCN8s(pretrained_net=vgg_model, n_class=3)
+    #vgg_model = VGGNet(requires_grad=True, remove_fc=True)
+    #model = FCN8s(pretrained_net=vgg_model, n_class=3)
+    model = ESPNet_Encoder(3, p=2, q=3)
     model.load_state_dict(torch.load(args.ckpt,map_location='cpu'))
     model.eval()
     count=0
@@ -175,7 +176,7 @@ def Decode_image(img_n,name):
                 img_ans[i][j][1] = 0
                 img_ans[i][j][2] = 0
     im_ans = Image.fromarray(np.uint8(img_ans)).convert('RGB')           
-    im_ans.save("./Result/FCNS/Train/"+name+"_fcn_pred200_class3.png")
+    im_ans.save("./Result/ESPNET/Train/"+name+"_epsnet_pred200.png")
 
 if __name__ == '__main__':
     #参数解析
