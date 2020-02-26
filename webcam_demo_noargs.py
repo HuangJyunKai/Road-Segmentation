@@ -40,7 +40,7 @@ def RoadSeg(img_gt,model):
     img = img.view(1,3,720,1280) #for bbd espnet
     img = img.to(device)
     with torch.no_grad():
-        output= model(img)
+        output= model(img).to(device)
         output = torch.softmax(output,dim=1)
         N, _, h, w = output.shape
         pred = output.transpose(0, 2).transpose(3, 1).reshape(-1, 3).argmax(axis=1).reshape(N, h, w) #class 3
